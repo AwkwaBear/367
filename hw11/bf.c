@@ -28,11 +28,11 @@ int num_nodes;
 fscanf(fp, "%d", &num_nodes);
 
 /* Create adjacency list */
-struct adjlist_node ** adjlist = (struct adjlist_node **) 
+struct adjlist_node ** adjlist = (struct adjlist_node **)
 	malloc(sizeof(struct adjlist_node *)*num_nodes);
 for (int i=0; i<num_nodes; i++) {
 	adjlist[i] = NULL;
-}	
+}
 
 int num_links;
 fscanf(fp, "%d", &num_links);
@@ -50,7 +50,7 @@ for (int i=0; i<num_links; i++) {
 	newnode = (struct adjlist_node *) malloc(sizeof(struct adjlist_node *));
 	newnode->weight = weight;
 	newnode->node = end_node0;
-	newnode->next = adjlist[end_node1];	
+	newnode->next = adjlist[end_node1];
 	adjlist[end_node1] = newnode;
 }
 
@@ -80,8 +80,12 @@ return;
  */
 void bf(struct adjlist_node ** adjlist, int num_nodes)
 {
-printf("Function 'bf' doesn't work!\n");
+	int dist[num_nodes];
+
+	for (int i = 0; i < (num_nodes -1); i++){
+		dist[i] = INT_MAX;
+		dist[0] = 0;
+	}
 printf("Shortest paths:\n");
 
 }
-
