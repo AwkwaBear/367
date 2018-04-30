@@ -1,10 +1,3 @@
-//Anthony Gasbarro
-//EE 367
-
-//Program will compile but produces a segmentation fault when run
-
-
-
 /*
  * Bellman Ford algorithm
  */
@@ -106,12 +99,13 @@ void printpath(int parent[], int v){//begin function
 void bf(struct adjlist_node ** adjlist, int n, int e){//begin function
 
 int source;
-for(int i = 0; i < n-1; i++ ){
-	if(adjlist[i]->next == 0){
-		source = i;
+	//Set Source node to node 0 in graph
+	for (int i = 0; i < n-1; i++){
+		if (adjlist[i]->next == 0){
+			source = i;
+			printf("source set to %d", i);
+		}
 	}
-}
-
 
 	//variables u,v,w will store node, next, weight respectively
 	int u, v, w;
@@ -144,33 +138,32 @@ for(int i = 0; i < n-1; i++ ){
 	for (int i = 0; i < n-1 ; i++){//begin for '1'
 
 		//reinitialize current for each loop iteration
-		current = adjlist[0];
+		current = adjlist[source];
 
 	while(current != NULL){//begin while '1'
 
-//			printf("for loop iteration %d\n", i);
-
+			printf("for loop iteration %d\n", i);
 			//Set u,v,w to current nodes' values
 			u = current->node;
-//			printf("current node is %d\n", u);
+			printf("current node is %d\n", u);
 
 			if(current->next != NULL){
 			v = current->next->node;
-//			printf("next node is %d\n", v);
+			printf("next node is %d\n", v);
 			}
 
 			w = current->weight;
-//			printf("edge weigh is %d\n", w);
+			printf("edge weigh is %d\n", w);
 
 			if(distance[u] + w < distance[v]){//begin if '1'
 
 				//new lowest distance is updated
 				distance[v] = distance[u] + w;
-//				printf("distance set %d\n", distance[v]);
+				printf("distance set %d\n", distance[v]);
 
 				//parent of 'v' set to 'u'
 				parent[v] = u;
-//				printf("parent set %d\n", parent[v]);
+				printf("parent set %d\n", parent[v]);
 			}//end if '1'
 
 
@@ -192,25 +185,25 @@ for(int i = 0; i < n-1; i++ ){
 
 
 //reinitialize current while loop
-		current = adjlist[0];
+		current = adjlist[source];
 
 	while(current != NULL){//begin while '1'
 
 //			printf("for loop iteration %d\n", i);
 			//Set u,v,w to current nodes' values
 			u = current->node;
-//			printf("current node is %d\n", u);
+			printf("current node is %d\n", u);
 
 			if(current->next != NULL){
 			v = current->next->node;
-	//		printf("next node is %d\n", v);
+			printf("next node is %d\n", v);
 			}
 
 			w = current->weight;
-//			printf("edge weigh is %d\n", w);
+			printf("edge weigh is %d\n", w);
 
 			if(distance[u] + w < distance[v]){//begin if '1'
-//			printf("ERROR: Graph contains negative-weight cycle\n");
+			printf("ERROR: Graph contains negative-weight cycle\n");
 
 
 			}//end if '1'
@@ -225,7 +218,7 @@ for(int i = 0; i < n-1; i++ ){
 
 
 	printf("Shortest paths:\n");
-	current = adjlist[0];
+	current = adjlist[source];
 	int i = 0;
 	while(current != NULL){
 
