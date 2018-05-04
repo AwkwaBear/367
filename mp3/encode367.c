@@ -1,3 +1,7 @@
+//Completed By: Anthony Gasbarro
+//Due May 4th 2018
+
+
 /*
  * This program will input a data file and output a data compressed
  * file using the Huffman code.  The Huffman trie is included at the
@@ -81,6 +85,27 @@ int encoded_data_size(struct trie_node * root);
  */
 void debug_display_trie(struct trie_node * root);
 
+//functions to update priority queue
+void sort_priority_queue(struct trie_node ** queue, int size);
+
+void swap_nodes(struct trie_node * px, struct trie_node *py);
+
+struct trie_node * extract_min(struct trie_node ** queue,int size);
+
+void add_priority_queue(struct trie_node * treeroot,struct trie_node ** queue, int size);
+
+//function to encode tree
+void encode_tree(struct trie_node * root, FILE * out_fp);
+
+
+void post_ordertraverse(struct trie_node* node, FILE * out_fp);
+
+void compress_file(struct trie_node* node, FILE * in_fp, FILE * out_fp);
+
+void search_tree(int x, struct trie_node* node, FILE * out_fp);
+
+void write_codeword(char * codeword, FILE * out_fp);
+
 void main(int argc, char *argv[])
 {
 if (argc != 3) {
@@ -88,8 +113,8 @@ if (argc != 3) {
 	exit(EXIT_FAILURE);
 }
 
-if (access(argv[1],F_OK)==0) {
-	printf("Do you want to overwrite '%s' (y/n): ", argv[1]);
+if (access(argv[2],F_OK)==0) {
+	printf("Do you want to overwrite '%s' (y/n): ", argv[2]);
 	char c = getchar();
 	if (c != 'y') exit(EXIT_SUCCESS);
 }
@@ -132,13 +157,23 @@ struct trie_node *root = build_huffman_trie(trie_array);
 build_codewords(root);
 
 /* Display sizes of encoded data and the encoded file */
-int n= encoded_data_size(root);
+int n = encoded_data_size(root);
 printf("Size of encoded data: %d\n", n);
 printf("Size of encoded file: %d\n", 12 + encoded_trie_size + n);
 
 /* Display trie -- this is for debugging and this call can be deleted */
 debug_display_trie(root);
 
+int_to_binary(n, str, 12);
+for (int i=0; i<12; i++) {
+ fprintf(out_fp,"%c", str[11-i]);
+}
+
+encode_tree(root,out_fp);
+
+compress_file(root,in_fp, out_fp);
+
+printf("\n");
 
 /*
  * Free unused memory
@@ -152,15 +187,12 @@ fclose(out_fp);
 exit(EXIT_SUCCESS);
 }
 
-/*
- * Build a Huffman trie from a trie-leaf array
- *
- *   REWRITE this function
- */
+
 
 struct trie_node * build_huffman_trie(struct trie_node * trie_array[])
 {
 struct trie_node * queue[NUMNODES];
+struct trie_node * treeroot;
 int head = 0;
 int tail = NUMNODES-1;
 int size = 0;
@@ -175,25 +207,66 @@ for (int i=0; i<NUMNODES; i++) {
 	}
 }
 
-priority_queue(queue, tail);
+sort_priority_queue(queue, size);
 
-for(int i =0; i < )
+
+/* commented out debug
+for(int i = 0; i < size; i++){
+	printf("letter is %c freq is %d\n", queue[i]->key,queue[i]->freq);
+}
+*/
 
 while(size > 1) {
 	struct trie_node * new_node = create_trie_nonleaf();
 
 	for (int k=0; k<2; k++) {
-		new_node->child[k] = queue[head];
-		head = (head+1) % NUMNODES;
+		new_node->child[k] = extract_min(queue, size);
 		size--;
+		new_node->freq += new_node->child[k]->freq;
 	}
 
-	tail = (tail+1)%NUMNODES;
-	queue[tail] = new_node;
+	treeroot = new_node;
+	add_priority_queue(treeroot, queue, size);
 	size++;
+
+	sort_priority_queue(queue, size);
 }
 
-return queue[head];
+return treeroot;
+}
+
+
+void sort_priority_queue(struct trie_node ** queue, int size){
+	for(int i = 0; i < size-1; i++){
+		for(int j = 0; j < size-i-1; j++){
+			if (queue[j]->freq > queue[j+1]->freq)
+              swap_nodes(queue[j], queue[j+1]);
+		}
+	}
+}
+
+void swap_nodes(struct trie_node * px, struct trie_node *py){
+	struct trie_node temp =  *px;
+	*px = *py;
+	*py = temp;
+}
+
+void add_priority_queue(struct trie_node * treeroot,struct trie_node ** queue, int size){
+	for(int i = size; i >= 0; i--){
+		queue[i+1] = queue[i];
+	}
+	queue[0] = treeroot;
+}
+
+//will remove lowest freq node from queue and return it
+struct trie_node * extract_min(struct trie_node ** queue, int size){
+	struct trie_node *temp = queue[0];
+
+	for(int i = 0; i < size; i++){
+		queue[i] = queue[i+1];
+	}
+
+ 	return temp;
 }
 
 void destroy_huffman_trie(struct trie_node * root)
@@ -207,6 +280,60 @@ if (root->isleaf == TRUE) {
 free(root->codeword);
 free(root);
 return;
+}
+
+void encode_tree(struct trie_node * root, FILE * out_fp){
+	post_ordertraverse(root, out_fp);
+}
+
+void post_ordertraverse(struct trie_node* node, FILE * out_fp)
+{
+    if (node == NULL)
+          return;
+
+    if(node->isleaf == FALSE){
+     fprintf(out_fp,"1");
+ 	 }
+	 else {
+		 int temp = (int) node->key;
+		 char str[12];
+		 int_to_binary(temp, str, 12);
+		 fprintf(out_fp, "0");
+		 for (int i=0; i<12; i++) {
+		 	fprintf(out_fp,"%c", str[11-i]);
+		 }
+	 }
+     /* then recur on left sutree */
+     post_ordertraverse(node->child[0],out_fp);
+
+     /* now recur on right subtree */
+    post_ordertraverse(node->child[1], out_fp);
+}
+
+//file read in and encoding function
+void compress_file(struct trie_node* node, FILE * in_fp, FILE * out_fp){
+	rewind(in_fp);
+	for (int x=fgetc(in_fp); x!=EOF; x=fgetc(in_fp)) {
+			search_tree(x, node, out_fp);
+		}
+}
+
+//search tree recurses whole tree to find character to print
+void search_tree(int x, struct trie_node* node, FILE * out_fp)
+{
+    if (node == NULL)
+          return;
+
+		if(x == node->key){
+			for (int k=0; k < node->codeword_length; k++) {
+				fprintf(out_fp,"%c",node->codeword[node->codeword_length-1-k]);
+			}
+		}
+     /* then recur on left sutree */
+     search_tree(x ,node->child[0],out_fp);
+
+     /* now recur on right subtree */
+    search_tree(x,node->child[1], out_fp);
 }
 
 /*
@@ -396,6 +523,7 @@ else {  /* Display a leaf */
 	printf("\n");
 }
 }
+
 
 /*
  * Displays the trie.  Used in debugging.  Do not delete this function
