@@ -92,7 +92,7 @@ for (int i=0; i < length; i++) {
 	//If a second symbol is encountered the 2nd symbol tracker will be set
 	//to the new symbol. The if statement above will account for if a third new
 	//symbol is encountered.
-	if (str[i] != symbol1 && str[i] != symbol2) { 
+	if (str[i] != symbol1 && str[i] != symbol2) {
 		symbol2 = str[i];
 
 	}

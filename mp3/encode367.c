@@ -88,7 +88,7 @@ if (argc != 3) {
 	exit(EXIT_FAILURE);
 }
 
-if (access(argv[2],F_OK)==0) {
+if (access(argv[1],F_OK)==0) {
 	printf("Do you want to overwrite '%s' (y/n): ", argv[1]);
 	char c = getchar();
 	if (c != 'y') exit(EXIT_SUCCESS);
@@ -174,6 +174,10 @@ for (int i=0; i<NUMNODES; i++) {
 		}
 	}
 }
+
+priority_queue(queue, tail);
+
+for(int i =0; i < )
 
 while(size > 1) {
 	struct trie_node * new_node = create_trie_nonleaf();
