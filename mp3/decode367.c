@@ -35,7 +35,7 @@ void destroy_trie_node(struct trie_node * node);
  * Creates and destroys an array to store trie leaves (which have data bytes)
  * This can be used to look up trie leaves based on data byte values
  */
-struct trie_node ** create_trie_node_array(FILE *fp);
+struct trie_node ** create_trie_node_array(int treecode[], int size);
 void destroy_trie_node_array(struct trie_node ** trie_node_array);
 
 /* Computes the number of data bytes in a trie leaf array */
@@ -87,6 +87,7 @@ void write_codeword(char * codeword, FILE * out_fp);
 //get convert binary to decimal function
 int get_n(int str[], int length);
 
+char ascii_convert(int str[], int length);
 
 void main(int argc, char *argv[])
 {
@@ -126,12 +127,12 @@ for(int i = 11; i >= 0; i--){
 		else if (c == '0'){
 			str[i] = 0;
 		}
-		printf("n = %c\n", n);
+		printf("c = %c\n", c);
 	}
 
 
 int n = get_n(str, 12);
-
+printf("n = %d\n", n);
 int treecode[n];
 
 	for (int i = 0; i < n; i++){
@@ -142,13 +143,23 @@ int treecode[n];
 		else if (c == '0'){
 		treecode[i] = 0;
 		}
-
+printf("treecode %d: = %d\n", i, treecode[i]);
 	}
 
+struct trie_node ** forest = create_trie_node_array(treecode, n);
+printf("tree node array returned\n");
+printf("attempting to print keys\n");
 
+for(int i = 0; i < n; i++){
 
-
+	if(forest[i]->isleaf == TRUE){
+	printf("key is %c", forest[i]->key);
 }
+}
+
+
+
+} //end main
 
 int get_n(int str[], int length){
 	int n = 0;
@@ -163,9 +174,12 @@ for (int i = 0; i < length; i++){
 		}
 		mult = mult*2;
 	}
+//	printf("n before return = %d", n);
 	return n;
 }
 
+
+/*
 struct trie_node * rebuild_huffman_trie(int treecode[], int size)
 {
 	struct trie_node * root = create_trie_nonleaf();
@@ -182,11 +196,11 @@ for(int i = 0; i < n; i++){
 sort_priority_queue(queue, size);
 
 
-/* commented out debug
+// commented out debug
 for(int i = 0; i < size; i++){
 	printf("letter is %c freq is %d\n", queue[i]->key,queue[i]->freq);
 }
-*/
+
 
 while(size > 1) {
 	struct trie_node * new_node = create_trie_nonleaf();
@@ -207,7 +221,7 @@ while(size > 1) {
 return treeroot;
 }
 
-
+*/
 void sort_priority_queue(struct trie_node ** queue, int size){
 	for(int i = 0; i < size-1; i++){
 		for(int j = 0; j < size-i-1; j++){
@@ -240,6 +254,50 @@ struct trie_node * extract_min(struct trie_node ** queue, int size){
 
  	return temp;
 }
+
+
+struct trie_node ** create_trie_node_array(int treecode[], int size)
+{
+struct trie_node ** trie_array =
+	(struct trie_node **) malloc(size * sizeof(struct trie_node *));
+
+for (int i=0; i <size; i++) { /* Initialize array */
+	trie_array[i] = NULL;
+}
+
+for (int i=0; i<size; i++) { /* Collect statistics */
+	int str[8];
+	char data;
+	int k = 0;
+printf("loop i = %d\n", i);
+	if (treecode[i] == 1) {
+		trie_array[i] = create_trie_nonleaf();
+	}
+	else if(treecode[i] == 0){
+		for(int j = 8; j >= 1; j--){
+			str[k] = treecode[i+j];
+			printf("input = %d\n", str[k]);
+			k++;
+		}
+		data = ascii_convert(str, 8);
+		printf("data = %c\n", data);
+		printf("creating tree leaf\n");
+		trie_array[i] = create_trie_leaf(data);
+		printf("last tree leaf made\n");
+		i += 8;
+	}
+}
+return trie_array;
+}
+
+char ascii_convert(int str[], int length){
+	int dec = get_n(str, length);
+	printf("decimal = %d\n", dec);
+	char c = (char) dec;
+	printf("converted value is %c\n", c);
+	return c;
+}
+
 
 /*
  * Calculate the size of the encoded data file
